@@ -1,4 +1,6 @@
 mod app;
+mod env;
+mod telemetry;
 
 use std::net::SocketAddr;
 
@@ -9,14 +11,18 @@ use clap::Parser;
 struct Args {
     #[arg(long, env = "BIND", default_value = "0.0.0.0:8080")]
     bind: SocketAddr,
+
+    #[arg(long, env = "RUST_LOG", default_value = "info")]
+    log: String,
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = Args::try_parse()?;
+    let _telemetry = telemetry::Telemetry::init(&args.log)?;
     let listener = tokio::net::TcpListener::bind(args.bind).await?;
 
-    println!("listening on http://{}", args.bind);
+    tracing::info!(bind = %args.bind, "listening");
 
     axum::serve(listener, app::router()).await?;
 
