@@ -1,0 +1,12 @@
+target/
+.git/
+.direnv/
+.devenv/
+.idea/
+
+.env
+.env.*
+!.env.example
+
+**/*.rs.bk
+**/mutants.out*/
