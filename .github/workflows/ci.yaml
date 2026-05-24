@@ -1,0 +1,134 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}-${{ github.ref_name == 'main' && github.sha || 'anysha' }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash -euxo pipefail {0}
+
+jobs:
+  style:
+    name: style
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
+        with:
+          toolchain: stable
+          components: rustfmt
+      - name: Check formatting
+        run: cargo fmt --all --check
+      - name: Check for typos
+        uses: crate-ci/typos@7b04f660f4ee4f048d18fd341887cf28dfbedfe2 # master
+
+  clippy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
+        with:
+          toolchain: stable
+          components: clippy
+      - name: Cache cargo registry and build
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - name: Run clippy
+        run: cargo clippy --all -- -D warnings
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
+        with:
+          toolchain: stable
+      - name: Cache cargo registry and build
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - name: Install nextest
+        uses: taiki-e/install-action@132b6d4aaab26f88e6372807be16a43977a9b0cb # nextest
+      - name: Build
+        run: cargo build --verbose
+      - name: Run tests
+        run: cargo nextest run --verbose --no-tests=pass
+
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
+        with:
+          toolchain: stable
+      - name: Cache cargo registry and build
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - name: Check documentation
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --no-deps --document-private-items
+
+  machete:
+    name: machete
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # master
+        with:
+          toolchain: stable
+      - name: Install cargo-machete
+        uses: taiki-e/install-action@cf8b7380781181cb1cdeacc8ccc651f55d4c2c13 # cargo-machete
+      - name: Check unused dependencies
+        run: cargo machete
+
+  tests_pass:
+    name: tests pass
+    needs: [style, clippy, test, docs, machete]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check job results
+        run: |
+          set +x
+          EXIT_CODE=0
+
+          check_result() {
+            echo "* $1: $2"
+            if [[ "$2" != "skipped" && "$2" != "success" ]]; then EXIT_CODE=1; fi
+          }
+
+          check_result "style" "$RESULT_STYLE"
+          check_result "clippy" "$RESULT_CLIPPY"
+          check_result "test" "$RESULT_TEST"
+          check_result "docs" "$RESULT_DOCS"
+          check_result "machete" "$RESULT_MACHETE"
+
+          exit $EXIT_CODE
+        env:
+          RESULT_STYLE: ${{ needs.style.result }}
+          RESULT_CLIPPY: ${{ needs.clippy.result }}
+          RESULT_TEST: ${{ needs.test.result }}
+          RESULT_DOCS: ${{ needs.docs.result }}
+          RESULT_MACHETE: ${{ needs.machete.result }}
