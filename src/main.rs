@@ -1,5 +1,4 @@
 mod app;
-mod env;
 mod server;
 mod telemetry;
 

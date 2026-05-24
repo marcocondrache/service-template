@@ -1,8 +1,9 @@
-use crate::env::PKG_NAME;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{
     EnvFilter, filter::ParseError, layer::SubscriberExt, util::SubscriberInitExt,
 };
+
+const PKG_NAME: &str = env!("CARGO_CRATE_NAME");
 
 pub struct Telemetry {
     _guard: WorkerGuard,
