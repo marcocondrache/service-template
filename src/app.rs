@@ -1,6 +1,6 @@
-mod health;
-
 use axum::{Router, http::StatusCode, routing::any};
+
+mod health;
 
 pub fn router() -> Router {
     Router::new()

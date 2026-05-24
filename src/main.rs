@@ -1,5 +1,6 @@
 mod app;
 mod env;
+mod server;
 mod telemetry;
 
 use std::net::SocketAddr;
@@ -20,11 +21,6 @@ struct Args {
 async fn main() -> anyhow::Result<()> {
     let args = Args::try_parse()?;
     let _telemetry = telemetry::Telemetry::init(&args.log)?;
-    let listener = tokio::net::TcpListener::bind(args.bind).await?;
 
-    tracing::info!(bind = %args.bind, "listening");
-
-    axum::serve(listener, app::router()).await?;
-
-    Ok(())
+    server::serve(app::router(), args.bind).await
 }
