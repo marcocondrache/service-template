@@ -32,7 +32,7 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all --check
       - name: Check for typos
-        uses: crate-ci/typos@3bc303c295c081add5df4a4d52a1e117f2fb2dce # master
+        uses: crate-ci/typos@26e1ab0f398ee2139416a695ba2f7497533e6909 # master
 
   clippy:
     runs-on: ubuntu-latest
