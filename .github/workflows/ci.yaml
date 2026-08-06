@@ -46,7 +46,7 @@ jobs:
           toolchain: stable
           components: clippy
       - name: Cache cargo registry and build
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
       - name: Run clippy
         run: cargo clippy --all -- -D warnings
 
@@ -62,7 +62,7 @@ jobs:
         with:
           toolchain: stable
       - name: Cache cargo registry and build
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
       - name: Install nextest
         uses: taiki-e/install-action@acdba816b0980ba6b63f1109f89a046e15fc301a # nextest
       - name: Build
@@ -81,7 +81,7 @@ jobs:
         with:
           toolchain: stable
       - name: Cache cargo registry and build
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
       - name: Check documentation
         env:
           RUSTDOCFLAGS: -D warnings
