@@ -64,7 +64,7 @@ jobs:
       - name: Cache cargo registry and build
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
       - name: Install nextest
-        uses: taiki-e/install-action@290d96bf7f78278289e6958c5d67aaadd4b0afc8 # nextest
+        uses: taiki-e/install-action@4dc1969decfa71b34f25aa7f3dd4656654d9ad1e # nextest
       - name: Build
         run: cargo build --verbose
       - name: Run tests
@@ -99,7 +99,7 @@ jobs:
         with:
           toolchain: stable
       - name: Install cargo-machete
-        uses: taiki-e/install-action@99cc44d6bfb6ac37dd8a014ddabb4625dab58695 # cargo-machete
+        uses: taiki-e/install-action@9b6b559d826485c6d295526fa532f31561f80197 # cargo-machete
       - name: Check unused dependencies
         run: cargo machete
 
